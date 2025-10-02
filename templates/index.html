@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot Restaurante Girona</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 flex flex-col">
+    <h2 class="text-2xl font-bold text-center text-teal-700 mb-4">🍴 Chatbot Restaurante Girona</h2>
+
+    <!-- Zona de mensajes -->
+    <div id="messages" class="flex-1 overflow-y-auto border border-gray-200 rounded-lg p-3 space-y-2 h-96">
+      <!-- Mensaje de bienvenida -->
+      <div class="text-left">
+        <span class="inline-block bg-gray-100 text-gray-800 px-3 py-2 rounded-lg">
+          ¡Hola! Soy el asistente virtual del Restaurante Girona 🍴.<br>
+          Pregúntame sobre nuestro horario, menú, reservas o ubicación.
+        </span>
+      </div>
+    </div>
+
+    <!-- Input + botón -->
+    <div class="mt-4 flex">
+      <input id="input" type="text" 
+             placeholder="Escribe tu mensaje..."
+             class="flex-1 border border-gray-300 rounded-l-lg p-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+      <button onclick="send()"
+              class="bg-teal-600 text-white px-4 py-2 rounded-r-lg hover:bg-teal-700">
+        Enviar
+      </button>
+    </div>
+
+    <!-- Botones de respuestas rápidas -->
+    <div class="flex space-x-2 mt-3">
+      <button onclick="sendQuick('¿Cuál es el horario?')" class="bg-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300">Horario</button>
+      <button onclick="sendQuick('¿Qué hay en el menú?')" class="bg-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300">Menú</button>
+      <button onclick="sendQuick('¿Cómo hago una reserva?')" class="bg-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300">Reservas</button>
+      <button onclick="sendQuick('¿Dónde están ubicados?')" class="bg-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300">Ubicación</button>
+    </div>
+  </div>
+
+  <script>
+    async function send() {
+      const inputEl = document.getElementById("input");
+      let input = inputEl.value.trim();
+      if (!input) return;
+
+      // Mostrar mensaje del usuario
+      document.getElementById("messages").innerHTML += 
+        `<div class="text-right"><span class="inline-block bg-teal-100 text-teal-800 px-3 py-2 rounded-lg">${input}</span></div>`;
+
+      // Petición al backend
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input })
+      });
+
+      const data = await res.json();
+      let botResponse = data.response || "";
+
+      // Mostrar respuesta del bot
+      document.getElementById("messages").innerHTML += 
+        `<div class="text-left"><span class="inline-block bg-gray-100 text-gray-800 px-3 py-2 rounded-lg">${botResponse}</span></div>`;
+
+      inputEl.value = "";
+
+      // Scroll automático
+      const messagesEl = document.getElementById("messages");
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    // Enviar con tecla Enter
+    document.getElementById("input").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") send();
+    });
+
+    // Respuestas rápidas
+    function sendQuick(msg) {
+      document.getElementById("input").value = msg;
+      send();
+    }
+  </script>
+</body>
+</html>
